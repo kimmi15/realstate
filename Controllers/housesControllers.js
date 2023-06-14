@@ -1,6 +1,7 @@
 const userModel = require("../Models/userModel");
 const House = require("../Models/houseModel");
 const mongoose = require("mongoose");
+const jwt = require('jsonwebtoken');
 const { ObjectId } = mongoose.Types;
 
 
@@ -23,8 +24,25 @@ const houses = async (req, res) => {
 
 const houseslike = async (req, res) => {
   const { userId, houseId } = req.params;
+  const { token } = req.headers; // Assuming the token is provided in the headers
 
   try {
+    if (!token) {
+      return res.status(400).send({ status: false, message: "Token must be present" });
+    }
+
+    let decodedToken;
+    try {
+      decodedToken = jwt.verify(token, 'realstate'); // Replace 'realstate' with your actual secret key
+      // console.log(decodedToken)
+    } catch (error) {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+
+    if (decodedToken.userId !== userId) {
+      return res.status(403).json({ message: 'User ID does not match the token id Auntioncation failed' });
+    }
+
     if (!userId || !houseId) {
       return res.status(400).json({ message: 'User ID and house ID are required' });
     }
@@ -41,13 +59,13 @@ const houseslike = async (req, res) => {
 
     const alreadyLiked = user.likedHouses.includes(houseId);
     if (alreadyLiked) {
-      return res.status(404).json({ message: 'House is already liked' });
+      return res.status(400).json({ message: 'House is already liked' });
     }
 
     user.likedHouses.push(houseId);
     await user.save();
 
-    res.status(200).json({ message: user});
+    res.status(200).json({ message: user });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
