@@ -4,13 +4,15 @@ const route = require("./Routes/route");
 const  mongoose  = require("mongoose");
 const app = express();
 
+require('dotenv').config();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); 
 
-mongoose.connect("mongodb+srv://kimmi_kumari:kimmi@cluster0.mfdc6.mongodb.net/realstate?retryWrites=true&w=majority", {
+// console.log(process.env.PORT , process.env.JWT);
+mongoose.connect(process.env.DB_URL, {
     useNewUrlParser: true
 })
-.then( () => console.log("MongoDb is connected"))
+.then( () => console.log('connected DB....!'))
 .catch ( err => console.log(err) )
 
 
